@@ -92,6 +92,7 @@ static enum {
         ARG_INSTALL_SOURCE_AUTO,
 } arg_install_source = ARG_INSTALL_SOURCE_AUTO;
 static char *arg_efi_boot_option_description = NULL;
+static const char *default_loader_path = "/EFI/systemd";
 
 STATIC_DESTRUCTOR_REGISTER(arg_esp_path, freep);
 STATIC_DESTRUCTOR_REGISTER(arg_xbootldr_path, freep);
@@ -549,6 +550,12 @@ static int status_binaries(const char *esp_path, sd_id128_t partition) {
                 printf(" (/dev/disk/by-partuuid/" SD_ID128_UUID_FORMAT_STR ")", SD_ID128_FORMAT_VAL(partition));
         printf("\n");
 
+        r = enumerate_binaries(esp_path, default_loader_path, NULL, &last, &is_first);
+        if (r < 0) {
+                printf("\n");
+                return r;
+        }
+
         r = enumerate_binaries(esp_path, "EFI/systemd", NULL, &last, &is_first);
         if (r < 0) {
                 printf("\n");
@@ -874,7 +881,6 @@ static int mkdir_one(const char *prefix, const char *suffix) {
 static const char *const esp_subdirs[] = {
         /* The directories to place in the ESP */
         "EFI",
-        "EFI/systemd",
         "EFI/BOOT",
         "loader",
         NULL
@@ -928,7 +934,7 @@ static int copy_one_file(const char *esp_path, const char *name, bool force) {
                                        root ? " under directory " : "",
                                        strempty(root));
 
-        q = path_join("/EFI/systemd/", dest_name);
+        q = path_join(default_loader_path, dest_name);
         if (!q)
                 return log_oom();
 
@@ -1254,7 +1260,7 @@ static int remove_binaries(const char *esp_path) {
         const char *p;
         int r, q;
 
-        p = prefix_roota(esp_path, "/EFI/systemd");
+        p = prefix_roota(esp_path, default_loader_path);
         r = rm_rf(p, REMOVE_ROOT|REMOVE_PHYSICAL);
 
         q = remove_boot_efi(esp_path);
@@ -1678,7 +1684,6 @@ static int parse_argv(int argc, char *argv[]) {
                         if (r < 0)
                                 return r;
                         break;
-
                 case '?':
                         return -EINVAL;
 
@@ -1733,7 +1738,7 @@ static int are_we_installed(const char *esp_path) {
          *  → It specifically checks for systemd-boot, not for other boot loaders (which a check for
          *    /boot/loader/entries would do). */
 
-        _cleanup_free_ char *p = path_join(esp_path, "/EFI/systemd/");
+        _cleanup_free_ char *p = path_join(esp_path, default_loader_path);
         if (!p)
                 return log_oom();
 
@@ -2156,6 +2161,10 @@ static int verb_install(int argc, char *argv[], void *userdata) {
                         if (r < 0)
                                 return r;
 
+                        r = mkdir_one(arg_esp_path, default_loader_path);
+                        if (r < 0)
+                                return r;
+
                         r = create_subdirs(arg_dollar_boot_path(), dollar_boot_subdirs);
                         if (r < 0)
                                 return r;
@@ -2198,7 +2207,7 @@ static int verb_install(int argc, char *argv[], void *userdata) {
                 return 0;
         }
 
-        char *path = strjoina("/EFI/systemd/systemd-boot", arch, ".efi");
+        char *path = strjoina(default_loader_path, "systemd-boot", arch, ".efi");
         return install_variables(arg_esp_path, part, pstart, psize, uuid, path, install);
 }
 
@@ -2236,6 +2245,10 @@ static int verb_remove(int argc, char *argv[], void *userdata) {
         if (q < 0 && r >= 0)
                 r = q;
 
+        q = rmdir_one(arg_esp_path, default_loader_path);
+        if (q < 0 && r >= 0)
+                r = q;
+
         q = remove_subdirs(arg_esp_path, dollar_boot_subdirs);
         if (q < 0 && r >= 0)
                 r = q;
@@ -2270,7 +2283,7 @@ static int verb_remove(int argc, char *argv[], void *userdata) {
                 return r;
         }
 
-        char *path = strjoina("/EFI/systemd/systemd-boot", get_efi_arch(), ".efi");
+        char *path = strjoina(default_loader_path, "systemd-boot", get_efi_arch(), ".efi");
         q = remove_variables(uuid, path, true);
         if (q < 0 && r >= 0)
                 r = q;
