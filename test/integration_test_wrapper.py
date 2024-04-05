@@ -14,6 +14,7 @@ import os
 from pathlib import Path
 import shlex
 import subprocess
+import tempfile
 
 
 TEST_EXIT_DROPIN = """\
@@ -75,6 +76,9 @@ def main():
     journal_file = Path(f"{machine_name}.journal").absolute()
     logging.info(f"Capturing journal to {journal_file}")
 
+    console_log = Path(f"{machine_name}.console.log").absolute()
+    logging.debug(f"Capturing mkosi console log to {console_log}")
+
     mkosi_args = [
         'mkosi',
         '--directory', Path('..').resolve(),
@@ -120,7 +124,10 @@ def main():
     logging.debug(f"Running {shlex.join(os.fspath(a) for a in mkosi_args)}")
 
     try:
-        subprocess.run(mkosi_args, check=True)
+        tee = subprocess.Popen(['tee', console_log], stdin=subprocess.PIPE)
+        subprocess.run(mkosi_args, check=True, stderr=subprocess.STDOUT, stdout=tee.stdin)
+        tee.stdin.close()
+        tee.wait()
     except subprocess.CalledProcessError as e:
         if e.returncode not in (0, 77):
             suggested_command = [
