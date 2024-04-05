@@ -393,6 +393,7 @@ if get_option('integration-tests') != false
                         'mkosi_args' : [],
                         'depends' : [system_mkosi],
                         'timeout' : 600,
+                        'skip_shutdown' : false,
                 }
 
                 # TODO: This fs.exists call isn't included in rebuild logic
@@ -405,6 +406,9 @@ if get_option('integration-tests') != false
                         '--mkosi-image-name', test_params['mkosi_image_name'],
                         '--mkosi-output-path', test_params['mkosi_output_path'],
                         '--test-number', test_params['test_number']]
+                if test_params['skip_shutdown'] == true
+                        args += ['--skip-shutdown']
+                endif
                 args += ['--'] + test_params['mkosi_args']
                 test(test_params['test_name'],
                      integration_test_wrapper,

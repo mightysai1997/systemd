@@ -48,6 +48,7 @@ parser.add_argument('--test-name', required=True)
 parser.add_argument('--mkosi-image-name', required=True)
 parser.add_argument('--mkosi-output-path', required=True, type=Path)
 parser.add_argument('--test-number', required=True)
+parser.add_argument('--skip-shutdown', default=False, action='store_true')
 parser.add_argument('--no-emergency-exit',
                     dest='emergency_exit', default=True, action='store_false',
                     help="Disable emergency exit drop-ins for interactive debugging")
@@ -67,6 +68,7 @@ def main():
                   f"image: {args.mkosi_image_name}\n"
                   f"mkosi output path: {args.mkosi_output_path}\n"
                   f"mkosi args: {args.mkosi_args}\n"
+                  f"skip shutdown: {args.skip_shutdown}\n"
                   f"emergency exit: {args.emergency_exit}")
 
     journal_file = Path(f"{machine_name}.journal").absolute()
@@ -91,7 +93,11 @@ def main():
             if args.emergency_exit
             else []
         ),
-        f"--credential=systemd.unit-dropin.{test_unit_name}={shlex.quote(TEST_EXIT_DROPIN)}",
+        *(
+            [f"--credential=systemd.unit-dropin.{test_unit_name}={shlex.quote(TEST_EXIT_DROPIN)}"]
+            if not args.skip_shutdown
+            else []
+        ),
         '--append',
         '--kernel-command-line-extra',
         ' '.join([
