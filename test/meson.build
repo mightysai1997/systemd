@@ -391,6 +391,7 @@ if get_option('integration-tests') != false
                         'mkosi_output_path' : system_mkosi,
                         'test_number' : test_number,
                         'mkosi_args' : [],
+                        'setup_selinux' : false,
                         'depends' : [system_mkosi],
                         'timeout' : 600,
                         'skip_shutdown' : false,
@@ -406,9 +407,11 @@ if get_option('integration-tests') != false
                         '--mkosi-image-name', test_params['mkosi_image_name'],
                         '--mkosi-output-path', test_params['mkosi_output_path'],
                         '--test-number', test_params['test_number']]
+                if test_params['setup_selinux'] == true
+                        args += ['--setup-selinux']
+                endif
                 if test_params['skip_shutdown'] == true
                         args += ['--skip-shutdown']
-                endif
                 args += ['--'] + test_params['mkosi_args']
                 test(test_params['test_name'],
                      integration_test_wrapper,

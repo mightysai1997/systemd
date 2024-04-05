@@ -48,6 +48,7 @@ parser.add_argument('--test-name', required=True)
 parser.add_argument('--mkosi-image-name', required=True)
 parser.add_argument('--mkosi-output-path', required=True, type=Path)
 parser.add_argument('--test-number', required=True)
+parser.add_argument('--setup-selinux', default=False, action='store_true')
 parser.add_argument('--skip-shutdown', default=False, action='store_true')
 parser.add_argument('--no-emergency-exit',
                     dest='emergency_exit', default=True, action='store_false',
@@ -102,6 +103,11 @@ def main():
         '--kernel-command-line-extra',
         ' '.join([
             'systemd.hostname=H',
+            *(
+                ['apparmor=0', 'selinux=1', 'enforcing=0', 'lsm=selinux']
+                if args.setup_selinux
+                else [] # We assume mkosi.conf disables LSMs by default
+            ),
             f"SYSTEMD_UNIT_PATH=/usr/lib/systemd/tests/testdata/testsuite-{args.test_number}.units:/usr/lib/systemd/tests/testdata/units:",
             'systemd.unit=testsuite.target',
             f"systemd.wants={test_unit_name}",
