@@ -407,6 +407,9 @@ if get_option('integration-tests') != false
                         '--mkosi-image-name', test_params['mkosi_image_name'],
                         '--mkosi-output-path', test_params['mkosi_output_path'],
                         '--test-number', test_params['test_number']]
+                if test_params.has_key('hook_module')
+                        args += ['--hook-module', test_params['hook_module']]
+                endif
                 if test_params['setup_selinux'] == true
                         args += ['--setup-selinux']
                 endif
