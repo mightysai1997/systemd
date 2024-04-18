@@ -375,6 +375,7 @@ if get_option('integration-tests') != false
                 '71': 'TEST-71-HOSTNAME',
                 '72': 'TEST-72-SYSUPDATE',
                 '73': 'TEST-73-LOCALE',
+                '76': 'TEST-76-SYSCTL',
         }
         foreach test_number, dirname : integration_tests
                 test_unit_name = f'testsuite-@test_number@.service'
