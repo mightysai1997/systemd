@@ -345,6 +345,7 @@ if get_option('integration-tests') != false
                 '15': 'TEST-15-DROPIN',
                 '16': 'TEST-16-EXTEND-TIMEOUT',
                 '17': 'TEST-17-UDEV', # Can be flaky when overloaded if timeout abort test is slow
+                '18': 'TEST-18-FAILUREACTION',
         }
         foreach test_number, dirname : integration_tests
                 test_unit_name = f'testsuite-@test_number@.service'
