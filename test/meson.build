@@ -374,6 +374,7 @@ if get_option('integration-tests') != false
                 '68': 'TEST-68-PROPAGATE-EXIT-STATUS',
                 '71': 'TEST-71-HOSTNAME',
                 '72': 'TEST-72-SYSUPDATE',
+                '73': 'TEST-73-LOCALE',
         }
         foreach test_number, dirname : integration_tests
                 test_unit_name = f'testsuite-@test_number@.service'
