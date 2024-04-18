@@ -355,6 +355,7 @@ if get_option('integration-tests') != false
                 '31': 'TEST-31-DEVICE-ENUMERATION',
                 '32': 'TEST-32-OOMPOLICY',
                 '34': 'TEST-34-DYNAMICUSERMIGRATE',
+                '35': 'TEST-35-LOGIN',
         }
         foreach test_number, dirname : integration_tests
                 test_unit_name = f'testsuite-@test_number@.service'
