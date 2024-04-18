@@ -379,6 +379,7 @@ if get_option('integration-tests') != false
                 '78': 'TEST-78-SIGQUEUE',
                 '79': 'TEST-79-MEMPRESS',
                 '80': 'TEST-80-NOTIFYACCESS',
+                '81': 'TEST-81-GENERATORS',
         }
         foreach test_number, dirname : integration_tests
                 test_unit_name = f'testsuite-@test_number@.service'
