@@ -361,6 +361,7 @@ if get_option('integration-tests') != false
                 '43': 'TEST-43-PRIVATEUSER-UNPRIV',
                 '44': 'TEST-44-LOG-NAMESPACE',
                 '45': 'TEST-45-TIMEDATE',
+                '46': 'TEST-46-HOMED',
         }
         foreach test_number, dirname : integration_tests
                 test_unit_name = f'testsuite-@test_number@.service'
