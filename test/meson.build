@@ -369,6 +369,7 @@ if get_option('integration-tests') != false
                 '62': 'TEST-62-RESTRICT-IFACES',
                 '63': 'TEST-63-PATH',
                 '65': 'TEST-65-ANALYZE',
+                '66': 'TEST-66-DEVICE-ISOLATION',
         }
         foreach test_number, dirname : integration_tests
                 test_unit_name = f'testsuite-@test_number@.service'
