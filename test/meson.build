@@ -372,6 +372,7 @@ if get_option('integration-tests') != false
                 '66': 'TEST-66-DEVICE-ISOLATION',
                 '67': 'TEST-67-INTEGRITY',
                 '68': 'TEST-68-PROPAGATE-EXIT-STATUS',
+                '71': 'TEST-71-HOSTNAME',
         }
         foreach test_number, dirname : integration_tests
                 test_unit_name = f'testsuite-@test_number@.service'
