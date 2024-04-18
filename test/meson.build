@@ -396,6 +396,7 @@ if get_option('integration-tests') != false
                         'depends' : [system_mkosi],
                         'timeout' : 600,
                         'skip_shutdown' : false,
+                        'skip_default_test' : false,
                 }
 
                 # TODO: This fs.exists call isn't included in rebuild logic
@@ -403,6 +404,9 @@ if get_option('integration-tests') != false
                 # you need to touch another build file to get it to reparse.
                 if fs.exists(dirname / 'meson.build')
                         subdir(dirname)
+                endif
+                if test_params['skip_default_test'] == true
+                        continue
                 endif
                 args = ['--test-name', test_params['test_name'],
                         '--mkosi-image-name', test_params['mkosi_image_name'],
