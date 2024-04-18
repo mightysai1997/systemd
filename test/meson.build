@@ -366,6 +366,7 @@ if get_option('integration-tests') != false
                 # Can be flaky when overloaded if daemon-reload is too slow to be rate-limited
                 '59': 'TEST-59-RELOADING-RESTART',
                 '60': 'TEST-60-MOUNT-RATELIMIT',
+                '62': 'TEST-62-RESTRICT-IFACES',
         }
         foreach test_number, dirname : integration_tests
                 test_unit_name = f'testsuite-@test_number@.service'
