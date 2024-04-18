@@ -13,3 +13,7 @@ mountpoint /issue2730
 run_subtests
 
 touch /testok
+
+# Stop the test soon so that ExecStop is run after we finish starting.
+(sleep 1; systemctl stop testsuite-07.service) &
+disown

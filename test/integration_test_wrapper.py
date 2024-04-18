@@ -9,11 +9,14 @@ with the expectation that as part of formally defining the API it will be tidy.
 '''
 
 import argparse
+import importlib
 import logging
 import os
 from pathlib import Path
 import shlex
 import subprocess
+import sys
+import tempfile
 
 
 TEST_EXIT_DROPIN = """\
@@ -48,9 +51,12 @@ parser.add_argument('--test-name', required=True)
 parser.add_argument('--mkosi-image-name', required=True)
 parser.add_argument('--mkosi-output-path', required=True, type=Path)
 parser.add_argument('--test-number', required=True)
+parser.add_argument('--setup-selinux', default=False, action='store_true')
+parser.add_argument('--skip-shutdown', default=False, action='store_true')
 parser.add_argument('--no-emergency-exit',
                     dest='emergency_exit', default=True, action='store_false',
                     help="Disable emergency exit drop-ins for interactive debugging")
+parser.add_argument('--hook-module', type=Path, default=None)
 parser.add_argument('mkosi_args', nargs="*")
 
 def main():
@@ -67,10 +73,22 @@ def main():
                   f"image: {args.mkosi_image_name}\n"
                   f"mkosi output path: {args.mkosi_output_path}\n"
                   f"mkosi args: {args.mkosi_args}\n"
-                  f"emergency exit: {args.emergency_exit}")
+                  f"skip shutdown: {args.skip_shutdown}\n"
+                  f"emergency exit: {args.emergency_exit}\n"
+                  f"hook module: {args.hook_module}")
+
+    hook = None
+    if args.hook_module is not None:
+        spec = importlib.util.spec_from_file_location('hook', args.hook_module)
+        hook = importlib.util.module_from_spec(spec)
+        sys.modules['hook'] = hook
+        spec.loader.exec_module(hook)
 
     journal_file = Path(f"{machine_name}.journal").absolute()
     logging.info(f"Capturing journal to {journal_file}")
+
+    console_log = Path(f"{machine_name}.console.log").absolute()
+    logging.debug(f"Capturing mkosi console log to {console_log}")
 
     mkosi_args = [
         'mkosi',
@@ -91,11 +109,20 @@ def main():
             if args.emergency_exit
             else []
         ),
-        f"--credential=systemd.unit-dropin.{test_unit_name}={shlex.quote(TEST_EXIT_DROPIN)}",
+        *(
+            [f"--credential=systemd.unit-dropin.{test_unit_name}={shlex.quote(TEST_EXIT_DROPIN)}"]
+            if not args.skip_shutdown
+            else []
+        ),
         '--append',
         '--kernel-command-line-extra',
         ' '.join([
             'systemd.hostname=H',
+            *(
+                ['apparmor=0', 'selinux=1', 'enforcing=0', 'lsm=selinux']
+                if args.setup_selinux
+                else [] # We assume mkosi.conf disables LSMs by default
+            ),
             f"SYSTEMD_UNIT_PATH=/usr/lib/systemd/tests/testdata/testsuite-{args.test_number}.units:/usr/lib/systemd/tests/testdata/units:",
             'systemd.unit=testsuite.target',
             f"systemd.wants={test_unit_name}",
@@ -103,12 +130,21 @@ def main():
         *args.mkosi_args,
     ]
 
+    if hook is not None and hasattr(hook, 'setup'):
+        # TODO: Think about the setup API supporting running vmspawn directly
+        stack.enter_context(hook.setup(mkosi_args))
+
     mkosi_args += ['qemu']
 
     logging.debug(f"Running {shlex.join(os.fspath(a) for a in mkosi_args)}")
 
     try:
-        subprocess.run(mkosi_args, check=True)
+        tee = subprocess.Popen(['tee', console_log], stdin=subprocess.PIPE)
+        (hook.wrap_run if hook is not None and hasattr(hook, 'wrap_run') else subprocess.run)(
+            mkosi_args, check=True, stderr=subprocess.STDOUT, stdout=tee.stdin
+        )
+        tee.stdin.close()
+        tee.wait()
     except subprocess.CalledProcessError as e:
         if e.returncode not in (0, 77):
             suggested_command = [
