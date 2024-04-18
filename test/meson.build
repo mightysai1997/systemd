@@ -348,6 +348,7 @@ if get_option('integration-tests') != false
                 '18': 'TEST-18-FAILUREACTION',
                 '19': 'TEST-19-CGROUP',
                 '22': 'TEST-22-TMPFILES',
+                '25': 'TEST-25-IMPORT',
         }
         foreach test_number, dirname : integration_tests
                 test_unit_name = f'testsuite-@test_number@.service'
