@@ -69,7 +69,7 @@ build() {
         --define "build_cflags $(rpm --eval %build_cflags) $EXTRA_CFLAGS" \
         --define "meson_build %{shrink:%{__meson} compile -C %{_vpath_builddir} -j %{_smp_build_ncpus} %{nil}}" \
         --define "meson_install %{shrink:DESTDIR=%{buildroot} %{__meson} install -C %{_vpath_builddir} --no-rebuild --quiet %{nil}}" \
-        --define "meson_extra_configure_options -D mode=developer -D b_sanitize=${SANITIZERS:-none}" \
+        --define "meson_extra_configure_options -D mode=developer -D b_sanitize=${SANITIZERS:-none} --reconfigure" \
         --define "__os_install_post /usr/lib/rpm/brp-suse %{nil}" \
         --define "__elf_exclude_path ^/usr/lib/systemd/tests/unit-tests/.*$" \
         --define "__script_requires %{nil}" \
