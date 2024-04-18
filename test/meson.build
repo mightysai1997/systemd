@@ -365,6 +365,7 @@ if get_option('integration-tests') != false
                 '45': 'TEST-45-TIMEDATE',
                 '46': 'TEST-46-HOMED',
                 '50': 'TEST-50-DISSECT',
+                '52': 'TEST-52-HONORFIRSTSHUTDOWN',
                 # Can be flaky when overloaded if daemon-reload is too slow to be rate-limited
                 '59': 'TEST-59-RELOADING-RESTART',
                 '60': 'TEST-60-MOUNT-RATELIMIT',
