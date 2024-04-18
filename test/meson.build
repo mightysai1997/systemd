@@ -340,6 +340,7 @@ if get_option('integration-tests') != false
                 '01': 'TEST-01-BASIC',
                 '02': 'TEST-02-UNITTESTS',
                 '03': 'TEST-03-JOBS',
+                '05': 'TEST-05-RLIMITS',
         }
         foreach test_number, dirname : integration_tests
                 test_unit_name = f'testsuite-@test_number@.service'
