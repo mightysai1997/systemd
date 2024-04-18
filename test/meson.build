@@ -342,6 +342,7 @@ if get_option('integration-tests') != false
                 '03': 'TEST-03-JOBS',
                 '05': 'TEST-05-RLIMITS',
                 '13': 'TEST-13-NSPAWN',
+                '15': 'TEST-15-DROPIN',
         }
         foreach test_number, dirname : integration_tests
                 test_unit_name = f'testsuite-@test_number@.service'
